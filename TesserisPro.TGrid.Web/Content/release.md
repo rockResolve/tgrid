@@ -1,4 +1,5 @@
 ﻿# TGrid Releases
+ * Clean project files
 ## 0.2.5
  * Added 'rowclick' handler to customize row click action
  * Added possibility to hide grid header
