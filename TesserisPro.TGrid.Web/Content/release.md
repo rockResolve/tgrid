@@ -1,5 +1,5 @@
 ﻿# TGrid Releases
- * Clean project files
+ * Clean project files: remove AngularItemsViewModel from ajaxmin build, remove old code in Scripts\iframe
 
 ## 0.2.5
  * Added 'rowclick' handler to customize row click action
