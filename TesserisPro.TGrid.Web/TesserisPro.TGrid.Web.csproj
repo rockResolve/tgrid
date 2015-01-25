@@ -195,7 +195,6 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\highliterFix.js" />
-    <Content Include="Scripts\iframe\AngularItemsViewModel.js" />
     <Content Include="Scripts\iframe\AngularModuleTGrid.js" />
     <Content Include="Scripts\iframe\tgrid-angular-debug.js" />
     <Content Include="Scripts\iframe\tgrid-array-items-provider-debug.js" />
