@@ -3,6 +3,7 @@
  * Add optional itemProvider single method for items & itemsCount: getItemsAndTotalCount
  * Auto generate single combined declaration file tgrid.d.ts
  * Clean project files: remove AngularItemsViewModel from ajaxmin build, remove old code in Scripts\iframe
+ * Bug - fix knockout pojo minItemsCountForVirtualization option
 
 ## 0.2.5
  * Added 'rowclick' handler to customize row click action

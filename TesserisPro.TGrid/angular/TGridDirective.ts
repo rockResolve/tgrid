@@ -37,10 +37,12 @@ module TGrid.Angular {
     export function Directive($parse, $compile): any {
         var directive: any = {};
         directive.restrict = 'E';
+
         directive.link = function (scope, element, attrs) {
             var options = new TesserisPro.TGrid.Options(element[0], 1 /* Angular */);
             options.parentViewModel = scope;
             (<any>options).compile = $compile;
+
             if (attrs["groupby"] != undefined) {
                 var groupBy = attrs["groupby"].split(' ');
                 if (groupBy.length > 0 && groupBy[0] != "") {
@@ -50,103 +52,50 @@ module TGrid.Angular {
                 }
             }
 
-            if (attrs["minItemsCountForVirtualization"] != undefined) {
+            if (attrs["minItemsCountForVirtualization"] > 0) {
                options.minItemsCountForVirtualization = parseInt(attrs["minItemsCountForVirtualization"]);
             } 
 
-            if (attrs["enablepaging"] == undefined) {
-                options.enablePaging = false;
-            } else {
-                options.enablePaging = attrs["enablepaging"] == "true" ? true : false;
-            }
+            options.enablePaging = parmToBoolean(attrs["enablepaging"], false);
 
             var pageSizeAtt = attrs["pagesize"];
             if (pageSizeAtt != undefined) {
                 options.pageSize = parseInt(pageSizeAtt);
-                if (this.isEnablePaging) {
-                    options.pageSize = (isNaN(this.pageSize) || this.pageSize < 1) ? 10 : this.pageSize;
-                }
+                options.pageSize = (isNaN(options.pageSize) || options.pageSize < 1) ? 10 : options.pageSize;
             }
 
             var pageSlideAttr = attrs["pageslide"];
             if (pageSlideAttr != undefined) {
                 options.pageSlide = parseInt(pageSlideAttr);
-                if (this.isEnablePaging) {
-                    options.pageSlide = (isNaN(this.pageSlide) || this.pageSlide < 1) ? 1 : this.pageSlide;
-                }
+                options.pageSlide = (isNaN(options.pageSlide) || options.pageSlide < 1) ? 1 : options.pageSlide;
             }
 
             var selectionModeAtt = attrs["selectionmode"];
             if (selectionModeAtt == "multi") {
                 options.selectionMode = 2 /* Multi */;
-            }
-
-            if (selectionModeAtt == undefined || selectionModeAtt == "single") {
+            } else if (selectionModeAtt == "none") {
+                options.selectionMode = 0 /* None */;
+            } else {    //default or selectionModeAtt == "single"
                 options.selectionMode = 1 /* Single */;
             }
 
-            if (selectionModeAtt == "none") {
-                options.selectionMode = 0 /* None */;
-            }
+            options.enableVirtualScroll = parmToBoolean(attrs["enablevirtualscroll"], false);
+            options.enableCollapsing = parmToBoolean(attrs["enablecollapsing"], false);
+            options.enableSorting = parmToBoolean(attrs["enablesorting"], false);
+            options.enableGrouping = parmToBoolean(attrs["enablegrouping"], false);
+            options.openDetailsOnSelection = parmToBoolean(attrs["showdetailsonselection"], false);
+            options.enableFiltering = parmToBoolean(attrs["enablefiltering"], false);
 
-            if (attrs["enablevirtualscroll"] == undefined) {
-                options.enableVirtualScroll = false;
-            } else {
-                options.enableVirtualScroll = attrs["enablevirtualscroll"] == "true" ? true : false;
-            }
+            options.rowClick = attrs["rowclick"];
 
-            if (attrs["enablecollapsing"] == undefined) {
-                options.enableCollapsing = false;
-            } else {
-                options.enableCollapsing = attrs["enablecollapsing"] == "true" ? true : false;
-            }
-
-            if (attrs["enablesorting"] == undefined) {
-                options.enableSorting = false;
-            } else {
-                options.enableSorting = attrs["enablesorting"] == "true" ? true : false;
-            }
-
-            if (attrs["enablegrouping"] == undefined) {
-                options.enableGrouping = false;
-            } else {
-                options.enableGrouping = attrs["enablegrouping"] == "true" ? true : false;
-            }
-
-            if (attrs["showdetailsonselection"] == undefined) {
-                options.openDetailsOnSelection = false;
-            } else {
-                options.openDetailsOnSelection = attrs["showdetailsonselection"] == "true" ? true : false;
-            }
-
-            if (attrs["enablefiltering"] == undefined) {
-                options.enableFiltering = false;
-            } else {
-                options.enableFiltering = attrs["enablefiltering"] == "true" ? true : false;
-            }
-
-            if (attrs["rowclick"] == undefined || attrs["rowclick"] == null) {
-                options.rowClick = null;
-            } else {
-                options.rowClick = attrs["rowclick"];
-            }
-
-            if (attrs["capturescroll"] == undefined) {
-                options.captureScroll = true;
-            } else {
-                options.captureScroll = attrs["capturescroll"] == "false" ? false : true;
-            }
+            options.captureScroll = parmToBoolean(attrs["capturescroll"], true);    //default to true
 
             var ready = attrs["ready"];
             if (ready != undefined && typeof scope[ready] == 'function') {
                 options.ready = scope[ready];
             }
-            var hideHeader = attrs["hideheader"];
-            if (hideHeader == undefined) {
-                options.hideHeader = false;
-            } else {
-                options.hideHeader = hideHeader == "true" ? true : false;
-            }
+
+            options.hideHeader = parmToBoolean(attrs["hideheader"], false);
             
 
             var grid = new TesserisPro.TGrid.Grid(element[0], options, scope[attrs["provider"]]);
@@ -164,6 +113,14 @@ module TGrid.Angular {
 
             
         };
+
+        var parmToBoolean = function (parm: any, defaultValue: boolean): boolean {
+            if (defaultValue) {
+                return parm === "false" ? false : true;     //exact match false, otherwise return true
+            } else {
+                return parm === "true" ? true : false;
+            }
+        }
 
         return directive;
     }

@@ -311,7 +311,7 @@ module TesserisPro.TGrid {
                         addClass(row, "selected");
                     }
 
-                    if (isNull(option.rowClick)) {
+                    if (!option.rowClick) {
                         (function (item) {
                             row.onclick = function (e) {
                                 if (option.selectionMode != SelectionMode.None) {
@@ -381,7 +381,7 @@ module TesserisPro.TGrid {
                 row.appendChild(placeholderColumn);
             }
 
-            if (isNotNull(option.rowClick)) {
+            if (option.rowClick) {
                 row.setAttribute("ng-click", "viewModel.model.".concat(option.rowClick).concat("(item ,$event)"));
             }
 
@@ -653,7 +653,7 @@ module TesserisPro.TGrid {
 
             var rowElement = document.createElement("div");
             addClass(rowElement, "tgrid-mobile-row");
-            if (isNotNull(option.rowClick)) {
+            if (option.rowClick) {
                 rowElement.setAttribute("ng-click", "$parent.".concat(option.rowClick).concat("(item, $event);"));
             }
 
@@ -679,7 +679,7 @@ module TesserisPro.TGrid {
 
             var row = rowTemplate(childScope)[0];
 
-            if (isNull(option.rowClick)) {
+            if (!option.rowClick) {
                 (function (item) {
                     row.onclick = function (e) {
                         if (option.selectionMode != SelectionMode.None) {

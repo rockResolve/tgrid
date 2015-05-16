@@ -31,7 +31,6 @@
 
 
 /// <reference path="../Scripts/typings/knockout/knockout.d.ts" />
-/// <reference path="../Scripts/typings/knockout.mapping/knockout.mapping.d.ts" />
 /// <reference path="../Scripts/typings/extenders.d.ts" />
 /// <reference path="../TGrid.ts" />
 /// <reference path="../SortDescriptor.ts" />
@@ -40,18 +39,20 @@
 class TGridBindingHandler implements KnockoutBindingHandler  {
  
     public init(element: HTMLElement, valueAccessor: () => any, allBindingsAccessor: () => any, viewModel: any, bindingContext: KnockoutBindingContext): void {
-        var options = TGridBindingHandler.getOptions(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext);
+        var value = valueAccessor();
+        var options = TGridBindingHandler.getOptions(element, value, allBindingsAccessor, viewModel, bindingContext);
         // Create grid after all other bindings are ready
       
         setTimeout(function () {
-            var grid = new TesserisPro.TGrid.Grid(element, options, valueAccessor().provider);
+            var value = valueAccessor();
+            var grid = new TesserisPro.TGrid.Grid(element, options, value.provider);
 
-            if (valueAccessor().options != undefined) {
+            if (value.options != undefined) {
                 options.apply = function () { grid.afterOptionsChange(); };
-                valueAccessor().options(options);
+                value.options(options);
             }
-            if (valueAccessor().bindingReady != undefined && typeof valueAccessor().bindingReady == 'function') {
-                valueAccessor().bindingReady(options);
+            if (value.bindingReady != undefined && typeof value.bindingReady == 'function') {
+                value.bindingReady(options);
             }
 
         }, 1);
@@ -69,208 +70,73 @@ class TGridBindingHandler implements KnockoutBindingHandler  {
         }
     }
 
-    public static getOptions(element: HTMLElement, valueAccessor: () => any, allBindingsAccessor: () => any, viewModel: any, bindingContext: KnockoutBindingContext): TesserisPro.TGrid.Options {
+    public static getOptions(element: HTMLElement, value: any, allBindingsAccessor: () => any, viewModel: any, bindingContext: KnockoutBindingContext): TesserisPro.TGrid.Options {
         var options = new TesserisPro.TGrid.Options(element, TesserisPro.TGrid.Framework.Knockout);
-        
+
         options.parentViewModel = viewModel;       
 
-        var groupBySortDescriptor = "";
-        if (isObservable(valueAccessor().groupBy)) {
-            groupBySortDescriptor = valueAccessor().groupBy();
-        } else {
-            groupBySortDescriptor = valueAccessor().groupBy;
-        }
+        var groupBySortDescriptor = ko.unwrap(value.groupBy);
         if (groupBySortDescriptor != undefined) {
             for (var i = 0; i < groupBySortDescriptor.length; i++) {
                 options.groupBySortDescriptors.push(new TesserisPro.TGrid.SortDescriptor(groupBySortDescriptor[i], true));
             }
         }
 
-        if (isObservable(valueAccessor().minItemsCountForVirtualization)) {
-            if (valueAccessor().minItemsCountForVirtualization() > 0) {
-                options.minItemsCountForVirtualization = valueAccessor().minItemsCountForVirtualization();
-            } 
-        } else {
-            if (valueAccessor().minItemsCountForVirtualization != null && valueAccessor().minItemsCountForVirtualization > 0) {
-                options.enablePaging = valueAccessor().minItemsCountForVirtualization;
-            }
+        var minItemsCountForVirtualization = ko.unwrap(value.minItemsCountForVirtualization);
+        if (minItemsCountForVirtualization > 0) {
+            options.minItemsCountForVirtualization = minItemsCountForVirtualization
         }
 
-        if (isObservable(valueAccessor().enablePaging)) {
-            if (typeof valueAccessor().enablePaging() == "boolean") {
-                options.enablePaging = valueAccessor().enablePaging();
-            } else {
-                options.enablePaging = valueAccessor().enablePaging == "true" ? true : false;
-            }
-        } else {
-            if (typeof valueAccessor().enablePaging == "boolean") {
-                options.enablePaging = valueAccessor().enablePaging;
-            } else {
-                options.enablePaging = valueAccessor().enablePaging == "true" ? true : false;
-            }
-        }
+        options.enablePaging = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enablePaging), false);
 
-        if (isObservable(valueAccessor().pageSize)) {
-            options.pageSize = valueAccessor().pageSize();
-        } else {
-            options.pageSize = valueAccessor().pageSize;
-        }
+        options.pageSize = ko.unwrap(value.pageSize);
         options.pageSize = (isNaN(options.pageSize) || options.pageSize < 1 ) ? 10 : options.pageSize;
 
-        if (isObservable(valueAccessor().selectMode)) {
-            options.selectionMode = valueAccessor().selectMode();
-        } else {
-            options.selectionMode = valueAccessor().selectMode;
-        }
-        if (isNaN(options.selectionMode)) {
-            options.selectionMode = 1;
-        }                
-        
-        if (isObservable(valueAccessor().enableVirtualScroll)) {
-            if (typeof valueAccessor().enableVirtualScroll() == "boolean") {
-                options.enableVirtualScroll = valueAccessor().enableVirtualScroll();
-            } else {
-                options.enableVirtualScroll = valueAccessor().enableVirtualScroll == "true" ? true : false;
-            }
-        } else {
-            if (typeof valueAccessor().enableVirtualScroll == "boolean") {
-                options.enableVirtualScroll = valueAccessor().enableVirtualScroll;
-            } else {
-                options.enableVirtualScroll = valueAccessor().enableVirtualScroll == "true" ? true : false;
-            }
-        }
+        options.enableVirtualScroll = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enableVirtualScroll), false);
+        options.enableCollapsing = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enableCollapsing), false);
+        options.openDetailsOnSelection = TGridBindingHandler.parmToBoolean(ko.unwrap(value.showDetailsOnSelection), false);
 
-        if (isObservable(valueAccessor().enableCollapsing)) {
-            if (typeof valueAccessor().enableCollapsing() == "boolean") {
-                options.enableCollapsing = valueAccessor().enableCollapsing();
-            } else {
-                options.enableCollapsing = valueAccessor().enableCollapsing == "true" ? true : false;
-            }
-        } else {
-            if (typeof valueAccessor().enableCollapsing == "boolean") {
-                options.enableCollapsing = valueAccessor().enableCollapsing;
-            } else {
-                options.enableCollapsing = valueAccessor().enableCollapsing == "true" ? true : false;
-            }
-        }
-
-        if (isObservable(valueAccessor().showDetailsOnSelection)) {
-            if (typeof valueAccessor().showDetailsOnSelection() == "boolean") {
-                options.openDetailsOnSelection = valueAccessor().showDetailsOnSelection();
-            } else {
-                options.openDetailsOnSelection = valueAccessor().showDetailsOnSelection == "true" ? true : false;
-            }
-        } else {
-            if (typeof valueAccessor().showDetailsOnSelection == "boolean") {
-                options.openDetailsOnSelection = valueAccessor().showDetailsOnSelection;
-            } else {
-                options.openDetailsOnSelection = valueAccessor().showDetailsOnSelection == "true" ? true : false;
-            }
-        }
-
-        var selectionMode = isObservable(valueAccessor().selectionMode) ? valueAccessor().selectionMode() : valueAccessor().selectionMode;
+        var selectionMode = ko.unwrap(value.selectionMode);
         if (selectionMode == "multi") {
             options.selectionMode = TesserisPro.TGrid.SelectionMode.Multi;
-        }
-
-        if (selectionMode == "single") {
+        } else if (selectionMode == "none") {
+            options.selectionMode = TesserisPro.TGrid.SelectionMode.None;
+        } else {    //default or selectionMode === "single"
             options.selectionMode = TesserisPro.TGrid.SelectionMode.Single;
         }
 
-        if (selectionMode == "none") {
-            options.selectionMode = TesserisPro.TGrid.SelectionMode.None;
-        }
+        options.enableSorting = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enableSorting), false);
+        options.enableGrouping = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enableGrouping), false);
+        options.enableFiltering = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enableFiltering), false);
 
-        if (isObservable(valueAccessor().enableSorting)) {
-            if (typeof valueAccessor().enableSorting() == "boolean") {
-                options.enableSorting = valueAccessor().enableSorting();
-            } else {
-                options.enableSorting = valueAccessor().enableSorting == "true" ? true : false;
-            }
-        } else {
-            if (typeof valueAccessor().enableSorting == "boolean") {
-                options.enableSorting = valueAccessor().enableSorting;
-            } else {
-                options.enableSorting = valueAccessor().enableSorting == "true" ? true : false;
-            }
-        }
-
-        if (isObservable(valueAccessor().enableGrouping)) {
-            if (typeof valueAccessor().enableGrouping() == "boolean") {
-                options.enableGrouping = valueAccessor().enableGrouping();
-            } else {
-                options.enableGrouping = valueAccessor().enableGrouping == "true" ? true : false;
-            }
-        } else {
-            if (typeof valueAccessor().enableGrouping == "boolean") {
-                options.enableGrouping = valueAccessor().enableGrouping;
-            } else {
-                options.enableGrouping = valueAccessor().enableGrouping == "true" ? true : false;
-            }
-        }    
-
-        if (isObservable(valueAccessor().enableFiltering)) {
-            if (typeof valueAccessor().enableFiltering() == "boolean") {
-                options.enableFiltering = valueAccessor().enableFiltering();
-            } else {
-                options.enableFiltering = valueAccessor().enableFiltering == "true" ? true : false;
-            }
-        } else {
-            if (typeof valueAccessor().enableFiltering == "boolean") {
-                options.enableFiltering = valueAccessor().enableFiltering;
-            } else {
-                options.enableFiltering = valueAccessor().enableFiltering == "true" ? true : false;
-            }
-        }
-
-        if (isObservable(valueAccessor().pageSlide)) {
-            options.pageSlide = valueAccessor().pageSlide();
-        } else {
-            options.pageSlide = valueAccessor().pageSlide;
-        }
+        options.pageSlide = ko.unwrap(value.pageSlide);
         options.pageSlide = (isNaN(options.pageSlide) || options.pageSlide < 1) ? 1 : options.pageSlide;
 
-        if (isObservable(valueAccessor().rowClick)) {
-            options.rowClick = valueAccessor().rowClick;
-        } else {
-            options.rowClick = valueAccessor().rowClick;
-        }
-        options.rowClick = isNoU(options.rowClick) ? null : options.rowClick;
+        options.rowClick = ko.unwrap(value.rowClick);
 
-        if (isObservable(valueAccessor().captureScroll)) {
-            if (typeof valueAccessor().captureScroll() == "boolean") {
-                options.captureScroll = valueAccessor().captureScroll();
-            } else {
-                options.captureScroll = valueAccessor().captureScroll == "false" ? false : true;
-            }
-        } else {
-            if (typeof valueAccessor().captureScroll == "boolean") {
-                options.captureScroll = valueAccessor().captureScroll;
-            } else {
-                options.captureScroll = valueAccessor().captureScroll == "false" ? false : true;
-            }
+        options.captureScroll = TGridBindingHandler.parmToBoolean(ko.unwrap(value.captureScroll), true);      //default to true
+
+        if (value.ready != undefined && typeof value.ready == 'function') {
+            options.ready = value.ready;
         }
 
-        if (valueAccessor().ready != undefined && typeof valueAccessor().ready == 'function') {
-            options.ready = valueAccessor().ready;
-        }
-
-        if (isObservable(valueAccessor().hideHeader)) {
-            if (typeof valueAccessor().hideHeader() == "boolean") {
-                options.hideHeader = valueAccessor().hideHeader();
-            } else {
-                options.hideHeader = valueAccessor().hideHeader == "true" ? true : false;
-            }
-        } else {
-            if (typeof valueAccessor().hideHeader == "boolean") {
-                options.hideHeader = valueAccessor().hideHeader;
-            } else {
-                options.hideHeader = valueAccessor().hideHeader == "true" ? true : false;
-            }
-        }
+        options.hideHeader = TGridBindingHandler.parmToBoolean(ko.unwrap(value.hideHeader), false);
 
         return options;
     }    
+
+    private static parmToBoolean(parm: any, defaultValue: boolean): boolean {
+        if (typeof parm !== "boolean") {
+            if (defaultValue) {
+                return parm === "false" ? false : true;     //exact match false, otherwise return true
+            } else {
+                return parm === "true" ? true : false;
+            }
+        } else {
+            return parm;
+        }
+    }
+
 }
 
 ko.bindingHandlers.tgrid = new TGridBindingHandler();
