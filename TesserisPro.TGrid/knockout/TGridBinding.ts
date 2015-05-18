@@ -40,18 +40,26 @@ class TGridBindingHandler implements KnockoutBindingHandler  {
  
     public init(element: HTMLElement, valueAccessor: () => any, allBindingsAccessor: () => any, viewModel: any, bindingContext: KnockoutBindingContext): void {
         var value = valueAccessor();
-        var options = TGridBindingHandler.getOptions(element, value, allBindingsAccessor, viewModel, bindingContext);
+
+        // set options to TGrid default values 
+        //   plus <script> element property settings (e.g. column member, cell template)
+        //   plus bound properties (e.g. enableFiltering: true)
+        var options = TGridBindingHandler.getOptions(element, value, viewModel);
+
         // Create grid after all other bindings are ready
-      
         setTimeout(function () {
             var value = valueAccessor();
             var grid = new TesserisPro.TGrid.Grid(element, options, value.provider);
 
-            if (value.options != undefined) {
+            if (value.options !== undefined) {
                 options.apply = function () { grid.afterOptionsChange(); };
                 value.options(options);
             }
-            if (value.bindingReady != undefined && typeof value.bindingReady == 'function') {
+
+            if (value.bindingReady) {
+                if (typeof value.bindingReady !== "function") {
+                    throw new Error("html bound 'bindingReady' parameter is not a function");
+                }
                 value.bindingReady(options);
             }
 
@@ -59,84 +67,137 @@ class TGridBindingHandler implements KnockoutBindingHandler  {
        
     }
 
+    // Not much practical use, only triggered on initial bind (when grid is null) and by update to parent valueAccessor (not update to its child properties)
     public update(element: HTMLElement, valueAccessor: () => any, allBindingsAccessor: () => any, viewModel: any, bindingContext: KnockoutBindingContext): void {
         
         var grid = TesserisPro.TGrid.Grid.getGridObject(element);
 
-        if (grid != null) {
-            var options = TGridBindingHandler.getOptions(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext); 
+        if (grid !== null) {
+            var options = TGridBindingHandler.getOptions(element, valueAccessor, viewModel); 
             grid.options = options;
             grid.updateBody();
         }
     }
 
-    public static getOptions(element: HTMLElement, value: any, allBindingsAccessor: () => any, viewModel: any, bindingContext: KnockoutBindingContext): TesserisPro.TGrid.Options {
+    private static getOptions(element: HTMLElement, value: any, viewModel: any): TesserisPro.TGrid.Options {
+        // set default values, then add element <script> property settings
         var options = new TesserisPro.TGrid.Options(element, TesserisPro.TGrid.Framework.Knockout);
 
         options.parentViewModel = viewModel;       
 
+
+        options.hideHeader = TGridBindingHandler.parmToBooleanOption(value, "hideHeader", options.hideHeader);
+        options.captureScroll = TGridBindingHandler.parmToBooleanOption(value, "captureScroll", options.captureScroll);
+
+
+        options.minItemsCountForVirtualization = TGridBindingHandler.parmToNumberOption(value, "minItemsCountForVirtualization", options.minItemsCountForVirtualization,
+            (parm) => { return parm < 1 ? " not greater than zero" : ""; });                                 
+
+        options.enablePaging = TGridBindingHandler.parmToBooleanOption(value, "enablePaging", options.enablePaging);
+
+        options.pageSize = TGridBindingHandler.parmToNumberOption(value, "pageSize", options.pageSize,                                 
+            (parm) => { return parm < 1 ? " not a number greater than zero": ""; } ); 
+
+        options.pageSlide = TGridBindingHandler.parmToNumberOption(value, "pageSlide", options.pageSlide,                             
+            (parm) => { return parm < 1 ? "is not a number greater than zero" : ""; }); 
+
+        options.enableVirtualScroll = TGridBindingHandler.parmToBooleanOption(value, "enableVirtualScroll", options.enableVirtualScroll);
+
+
+        //Row click action options
+        options.rowClick = TGridBindingHandler.parmToOption(value, "rowClick", options.rowClick);
+        options.openDetailsOnSelection = TGridBindingHandler.parmToBooleanOption(value, "showDetailsOnSelection", options.openDetailsOnSelection);
+
+        var selectionMode = ko.unwrap(value.selectionMode);
+        if (selectionMode === "multi") {
+            options.selectionMode = TesserisPro.TGrid.SelectionMode.Multi;
+        } else if (selectionMode === "single") {
+            options.selectionMode = TesserisPro.TGrid.SelectionMode.Single;
+        } else if (selectionMode === "none") {
+            options.selectionMode = TesserisPro.TGrid.SelectionMode.None;
+        } else if (selectionMode) {
+            throw new Error("html bound 'selectionMode' parameter was '" + selectionMode + "', but should have been 'multi', 'single' or 'none'");        //NOTE error if not valid
+        }
+
+
+        options.enableFiltering = TGridBindingHandler.parmToBooleanOption(value, "enableFiltering", options.enableFiltering);
+
+        options.enableSorting = TGridBindingHandler.parmToBooleanOption(value, "enableSorting", options.enableSorting);
+
+        options.enableGrouping = TGridBindingHandler.parmToBooleanOption(value, "enableGrouping", options.enableGrouping);
+        options.enableCollapsing = TGridBindingHandler.parmToBooleanOption(value, "enableCollapsing", options.enableCollapsing);
         var groupBySortDescriptor = ko.unwrap(value.groupBy);
-        if (groupBySortDescriptor != undefined) {
+        if (groupBySortDescriptor !== undefined) {
             for (var i = 0; i < groupBySortDescriptor.length; i++) {
                 options.groupBySortDescriptors.push(new TesserisPro.TGrid.SortDescriptor(groupBySortDescriptor[i], true));
             }
         }
 
-        var minItemsCountForVirtualization = ko.unwrap(value.minItemsCountForVirtualization);
-        if (minItemsCountForVirtualization > 0) {
-            options.minItemsCountForVirtualization = minItemsCountForVirtualization
-        }
 
-        options.enablePaging = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enablePaging), false);
+        options.ready = TGridBindingHandler.parmToOption(value, "ready", options.ready,
+            (parm) => { return (typeof parm !== "function") ? "is not a function" : "" });
 
-        options.pageSize = ko.unwrap(value.pageSize);
-        options.pageSize = (isNaN(options.pageSize) || options.pageSize < 1 ) ? 10 : options.pageSize;
-
-        options.enableVirtualScroll = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enableVirtualScroll), false);
-        options.enableCollapsing = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enableCollapsing), false);
-        options.openDetailsOnSelection = TGridBindingHandler.parmToBoolean(ko.unwrap(value.showDetailsOnSelection), false);
-
-        var selectionMode = ko.unwrap(value.selectionMode);
-        if (selectionMode == "multi") {
-            options.selectionMode = TesserisPro.TGrid.SelectionMode.Multi;
-        } else if (selectionMode == "none") {
-            options.selectionMode = TesserisPro.TGrid.SelectionMode.None;
-        } else {    //default or selectionMode === "single"
-            options.selectionMode = TesserisPro.TGrid.SelectionMode.Single;
-        }
-
-        options.enableSorting = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enableSorting), false);
-        options.enableGrouping = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enableGrouping), false);
-        options.enableFiltering = TGridBindingHandler.parmToBoolean(ko.unwrap(value.enableFiltering), false);
-
-        options.pageSlide = ko.unwrap(value.pageSlide);
-        options.pageSlide = (isNaN(options.pageSlide) || options.pageSlide < 1) ? 1 : options.pageSlide;
-
-        options.rowClick = ko.unwrap(value.rowClick);
-
-        options.captureScroll = TGridBindingHandler.parmToBoolean(ko.unwrap(value.captureScroll), true);      //default to true
-
-        if (value.ready != undefined && typeof value.ready == 'function') {
-            options.ready = value.ready;
-        }
-
-        options.hideHeader = TGridBindingHandler.parmToBoolean(ko.unwrap(value.hideHeader), false);
 
         return options;
     }    
 
-    private static parmToBoolean(parm: any, defaultValue: boolean): boolean {
-        if (typeof parm !== "boolean") {
-            if (defaultValue) {
-                return parm === "false" ? false : true;     //exact match false, otherwise return true
-            } else {
-                return parm === "true" ? true : false;
-            }
-        } else {
-            return parm;
+    private static parmToOption(value: any, parmName: string, defaultValue: any,
+                validationErrorFn?: (parm: any) => string): any {
+        var parmValue = ko.unwrap(value[parmName]);
+        if (parmValue === undefined) {
+            return defaultValue;
         }
+        if (validationErrorFn) {
+            var validationError = validationErrorFn(parmValue)
+            if (validationError) {
+                throw new Error("html bound '" + parmName + "' parameter " + validationError);
+            }
+        }
+
+        return parmValue;
     }
 
+    private static parmToNumberOption = (value: any, parmName: string, defaultValue: any,
+                validationErrorFn?: (parm: any) => string) => {
+        //accepts both string or number values (e.g. pageSize="3" or pageSize=3)
+        var parmValue = ko.unwrap(value[parmName]);
+        if (parmValue === undefined) {
+            return defaultValue;
+        }
+
+        parmValue = parseInt(parmValue);
+
+        if (isNaN(parmValue)) {
+            throw new Error("html directive '" + parmName + "' parameter is not a number");
+        } else if (validationErrorFn) {
+            var validationError = validationErrorFn(parmValue)
+            if (validationError) {
+                throw new Error("html directive '" + parmName + "' parameter " + validationError);
+            }
+        }
+        return <number>parmValue;
+    }
+
+    private static parmToBooleanOption(value: any, parmName: string, defaultValue: boolean): boolean {
+        //Parm should be boolean or strings "true", "false" (case insensitive)
+        //Any default is set in options constructor
+        var parmValue = ko.unwrap(value[parmName]);
+        if (parmValue === undefined) {
+            return;
+        }
+        
+        if (typeof parmValue === "string") {
+            if (parmValue.toLowerCase() === "false") {
+                parmValue = false;
+            } else if (parmValue.toLowerCase() === "true") {
+                parmValue = true;
+            }
+        } else if (typeof parmValue !== "boolean") {
+            throw new Error("html bound '" + parmName + "' parameter could not be converted to a boolean");
+        }
+
+        return parmValue;
+    }
 }
 
 ko.bindingHandlers.tgrid = new TGridBindingHandler();

@@ -84,56 +84,58 @@ module TesserisPro.TGrid {
            
     export class Options {
         public columns: Array<ColumnInfo> = [];
-        public enableVirtualScroll: boolean;  
-        public enablePaging: boolean;
-        public enableCollapsing: boolean;
-        public enableSorting: boolean;
-        public enableGrouping: boolean;
-        public enableFiltering: boolean;
-        public hideHeader: boolean;
+
+        public enableVirtualScroll: boolean = false;
+        public enablePaging: boolean = false;
+        public enableCollapsing: boolean = false;
+        public enableSorting: boolean = false;
+        public enableGrouping: boolean = false;
+        public enableFiltering: boolean = false;
+        public hideHeader: boolean = false;
 
         public mobileTemplateHtml: Template = null;
         public detailsTemplateHtml: Template = null;
         public groupHeaderTemplate: Template = null;
         public filterPopup: Template = null;
+        public tableFooterTemplate: Template = null;
 
         public framework: Framework;
         public target: HTMLElement;
         public pageSize: number = 10;
         public pageSlide: number = 1;
-        public batchSize: number = 50;
-        public firstLoadSize: number = 100;
-        public currentPage: number = 0;
         public sortDescriptor: SortDescriptor;
         public groupBySortDescriptors: Array<SortDescriptor> = [];
         public selectionMode: SelectionMode = SelectionMode.Single;
-        public openDetailsOnSelection: boolean;
+        public openDetailsOnSelection: boolean = false;
+        public minItemsCountForVirtualization: number = 100;
+        public rowClick: string = null;
+        public captureScroll: boolean = true;
+        public columnMinWidth: number = 5;
+
+        public apply: () => void;
+        public ready: (options: Options) => void;
+
+        //readonly
+        public selection: Array<any> = [];
+
+        //For internal use only
+        public batchSize: number = 50;
+        public firstLoadSize: number = 100;
+        public currentPage: number = 0;
 
         public filterDescriptor: FilterDescriptor = FilterDescriptor.getEmpty();
-        public tableFooterTemplate: Template = null;
 
         public showDetailFor: ShowDetail;
-        public selection: Array<any> = [];
 
         public parentViewModel: any;
         public filterPopupForColumn: ColumnInfo;
-        public columnMinWidth: number = 5;
-        public apply: () => void;
         public hasAnyNotSizedColumn: boolean = false;
-        public rowClick: string;
-        public captureScroll: boolean = true;
-        public hasAnyPercentageWidthColumn: boolean = false;
         public tableWidth: number = 0;
-        public minItemsCountForVirtualization: number;
-       
-
-        public ready: (options: Options) => void;
 
         constructor(element: HTMLElement, framework: Framework) {
             this.target = element;
             this.framework = framework;
             this.initialize();
-            this.minItemsCountForVirtualization = 100;
         }
 
         public isSelected(item: any): boolean {
@@ -174,12 +176,7 @@ module TesserisPro.TGrid {
                     if (cellDetail.length == 1){
                         column.cellDetail = new Template(cellDetail[0]);
                     } 
-                    if (columns[i].attributes['data-g-width'] != null) {
-                        column.width = columns[i].attributes['data-g-width'].nodeValue;
-                        if (columns[i].attributes['data-g-width'].nodeValue.indexOf("%") != -1 && !this.hasAnyPercentageWidthColumn) {
-                            this.hasAnyPercentageWidthColumn = true;
-                        }
-                    }
+
                     if (columns[i].attributes['data-g-views'] != null) {
                         column.device = columns[i].attributes['data-g-views'].nodeValue;
                     }
