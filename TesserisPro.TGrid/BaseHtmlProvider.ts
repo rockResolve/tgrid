@@ -226,7 +226,7 @@ module TesserisPro.TGrid {
             }
 
             if (lastVisiblePage < (pageCount - 1)) {
-                pagerElement.innerHTML += "<span class='tgrid-page-number' onclick='TesserisPro.TGrid.Grid.getGridObject(event.target).selectPage(" + lastVisiblePage.toString() + ")' >...</span>";
+                pagerElement.innerHTML += "<span class='tgrid-page-number' onclick='TesserisPro.TGrid.Grid.getGridObject(event.target).selectPage(" + (lastVisiblePage + 1).toString() + ")' >...</span>";
             }
 
             var pages = footer.getElementsByClassName("tgrid-pagination");
@@ -280,16 +280,16 @@ module TesserisPro.TGrid {
                 groupByMenu.setAttribute("class", "tgrid-menu");
                 hideElement(groupByMenu);
 
-                var self = this;
+                var that = this;
                 groupButton.onclick = (e) => {
                     e.cancelBubble = true;
-                    self.updateGroupByMenuContent(option, groupByMenu);
+                    that.updateGroupByMenuContent(option, groupByMenu);
                     if (groupByMenu.style.display == "none") {
                         unhideElement(groupByMenu);
                     } else {
                         hideElement(groupByMenu);
                     }
-                    self.doOnClickOutside([<HTMLElement>groupByMenu,<HTMLElement> groupButton], () => hideElement(groupByMenu));
+                    that.doOnClickOutside([<HTMLElement>groupByMenu,<HTMLElement> groupButton], () => hideElement(groupByMenu));
                 }
                 
                 groupButton.appendChild(groupByMenu);
@@ -359,20 +359,20 @@ module TesserisPro.TGrid {
 
         private updateGroupByMenuContent(option: Options, menu: HTMLUListElement) {
             menu.innerHTML = "";
-            for (var i = 0; i < option.columns.length; i++) {
-                if (option.columns[i].device.indexOf("desktop") != -1 && option.columns[i].enableGrouping) {
-                    if (option.columns[i].groupMemberPath != null) {
+            option.columns.forEach((column) => {
+                if (column.device.indexOf("desktop") != -1 && column.enableGrouping) {
+                    if (column.groupMemberPath != null) {
                         var alreadyGrouped = false;
                         for (var j = 0; j < option.groupBySortDescriptors.length; j++) {
-                            if (option.groupBySortDescriptors[j].path == option.columns[i].groupMemberPath) {
+                            if (option.groupBySortDescriptors[j].path == column.groupMemberPath) {
                                 alreadyGrouped = true;
                             }
                         }
 
                         if (!alreadyGrouped) {
                             var groupMenuItem = document.createElement("li");
-                            groupMenuItem["data-group-by-path"] = option.columns[i].groupMemberPath;
-                            var columnHeader = this.buildColumnHeader(option.columns[i]);
+                            groupMenuItem["data-group-by-path"] = column.groupMemberPath;
+                            var columnHeader = this.buildColumnHeader(column);
                             this.bindData(option, columnHeader);
                             groupMenuItem.appendChild(columnHeader);
                             groupMenuItem.onclick = (e) => {
@@ -380,11 +380,11 @@ module TesserisPro.TGrid {
                                 Grid.getGridObject(<HTMLElement>e.target).addGroupDescriptor(<string>e.currentTarget["data-group-by-path"], true);
                             }
 
-                        menu.appendChild(groupMenuItem);
+                            menu.appendChild(groupMenuItem);
                         }
                     }
                 }
-            }
+            });
         }
 
         public buildGroupMobileHeaderRow(option: Options, groupHeaderDescriptor: GroupHeaderDescriptor): HTMLElement {
@@ -441,7 +441,7 @@ module TesserisPro.TGrid {
             } else {
                 addClass(filter, "tgrid-filter-button");
             }
-            var self = this;
+            var that = this;
             (function (columnNumber) {
                 filter.onclick = (e) => {
                     var eventTarget = <HTMLElement>e.target;
@@ -457,12 +457,12 @@ module TesserisPro.TGrid {
                     } else {
                         grid.hideFilterPopup();
                     }
-                    self.doOnClickOutside([filterPopupContainer,filter], () => {
+                    that.doOnClickOutside([filterPopupContainer,filter], () => {
                         var grid = Grid.getGridObject(eventTarget);
                         if (grid != null) {
                             grid.hideFilterPopup();
-                            self.onCloseFilterPopup(filterPopupContainer)
-                                }
+                            that.onCloseFilterPopup(filterPopupContainer);
+                        }
                     });
                     e.cancelBubble = true;
                 };
@@ -490,7 +490,7 @@ module TesserisPro.TGrid {
                 button.className = "tgrid-mobile-button";
             }
                 
-            var self = this;
+            var that = this;
             button.onclick = (e) => { 
                 if (BaseHtmlProvider.mobileMenuHidden) {
                     var menu = document.createElement("ul");
@@ -499,7 +499,7 @@ module TesserisPro.TGrid {
 
                     button.innerHTML = "";
                     button.appendChild(menu);
-                    self.doOnClickOutside([menu], () => {
+                    that.doOnClickOutside([menu], () => {
                         hideElement(menu);
                         BaseHtmlProvider.mobileMenuHidden = true;
                     });
@@ -518,9 +518,7 @@ module TesserisPro.TGrid {
         }
 
         private addMobileMenuItems(option: Options, menu: HTMLUListElement, filterPopUp: HTMLElement) {
-            for (var i = 0; i < option.columns.length; i++) {
-                var column = option.columns[i];
-
+            option.columns.forEach( (column) => {
                 if (column.member != null || column.sortMemberPath != null || column.filterMemberPath != null || column.groupMemberPath != null) {
 
                     var menuItem = document.createElement("li");
@@ -537,7 +535,7 @@ module TesserisPro.TGrid {
 
                     if (option.enableSorting && column.sortMemberPath != null) {
                         var sortButton = document.createElement("div");
-                        if (!option.columns[i].enableSorting) {
+                        if (!column.enableSorting) {
                             addClass(sortButton, "tgrid-mobile-sort-button-inactive");
                         } else {
                             if (column.sortMemberPath == option.sortDescriptor.path) {
@@ -566,7 +564,7 @@ module TesserisPro.TGrid {
                     if (option.enableFiltering && column.filterMemberPath != null) {
                         var filterButton = document.createElement("div");
                         var isFiltered = false;
-                        if (!option.columns[i].enableFiltering) {
+                        if (!column.enableFiltering) {
                             addClass(filterButton, "tgrid-mobile-filter-button-inactive");
                         } else {
                             for (var j = 0; j < option.filterDescriptor.children.length; j++) {
@@ -580,12 +578,12 @@ module TesserisPro.TGrid {
                             if (!isFiltered) {
                                 filterButton.className = "tgrid-mobile-filter-button";
                             }
-                            var self = this;
+                            var that = this;
                             filterButton.onclick = e => {
                                 e.cancelBubble = true;
                                 hideElement(menu);
                                 BaseHtmlProvider.mobileMenuHidden = true;
-                                self.doOnClickOutside([filterPopUp], () => { hideElement(filterPopUp); });
+                                that.doOnClickOutside([filterPopUp], () => { hideElement(filterPopUp); });
 
                                 Grid.getGridObject(<HTMLElement>e.target).showFilterPopup(<ColumnInfo>e.target["data-g-column"], e.pageX, e.pageY, false);
                             };
@@ -596,7 +594,7 @@ module TesserisPro.TGrid {
                     if (option.enableGrouping && column.groupMemberPath != null) {
                         var groupButton = document.createElement("div");
                         var isGrouped = false;
-                        if (!option.columns[i].enableGrouping) {
+                        if (!column.enableGrouping) {
                             addClass(groupButton, "tgrid-mobile-group-button-inactive");
                         } else {
                             for (var j = 0; j < option.groupBySortDescriptors.length; j++) {
@@ -624,7 +622,7 @@ module TesserisPro.TGrid {
                     menuItem.appendChild(buttonsContainer);
                     menu.appendChild(menuItem);
                 }
-            }
+            });
         }
 
         public doOnClickOutside(targets: Array<HTMLElement>, action: () => void) {

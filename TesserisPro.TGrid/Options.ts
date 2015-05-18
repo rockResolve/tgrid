@@ -157,49 +157,50 @@ module TesserisPro.TGrid {
                 var headers = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("header");
                 var cells = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("cell");
                 var cellDetails = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("celldetail");
-                var columns = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("column");
 
-                for (var i = 0; i < columns.length; i++) {
+                var columnElements = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("column");
+                for (var idx = 0; idx < columnElements.length; idx++) {
+                    var columnElement = columnElements[idx];
                     var column = new ColumnInfo();
-                    if (columns[i].attributes['data-g-member'] != undefined){
-                        column.member = columns[i].attributes['data-g-member'].nodeValue;
+                    if (columnElement.attributes['data-g-member'] != undefined){
+                        column.member = columnElement.attributes['data-g-member'].nodeValue;
                     }
-                    var header = <NodeListOf<HTMLElement>>columns[i].getElementsByTagName("header");
+                    var header = <NodeListOf<HTMLElement>>columnElement.getElementsByTagName("header");
                     if (header.length > 0) {
                         column.header = new Template(header[0]);
                     }
-                    var cell = <NodeListOf<HTMLElement>>columns[i].getElementsByTagName("cell");
+                    var cell = <NodeListOf<HTMLElement>>columnElement.getElementsByTagName("cell");
                     if (cell.length > 0) {
                         column.cell = new Template(cell[0]);
                     }
-                    var cellDetail = <NodeListOf<HTMLElement>>columns[i].getElementsByTagName("celldetail");
+                    var cellDetail = <NodeListOf<HTMLElement>>columnElement.getElementsByTagName("celldetail");
                     if (cellDetail.length == 1){
                         column.cellDetail = new Template(cellDetail[0]);
                     } 
 
-                    if (columns[i].attributes['data-g-views'] != null) {
-                        column.device = columns[i].attributes['data-g-views'].nodeValue;
+                    if (columnElement.attributes['data-g-views'] != null) {
+                        column.device = columnElement.attributes['data-g-views'].nodeValue;
                     }
-                    if (columns[i].attributes['data-g-resizable'] != undefined) {
-                        column.resizable = columns[i].attributes['data-g-resizable'].nodeValue == 'false' ? false : true;
+                    if (columnElement.attributes['data-g-resizable'] != undefined) {
+                        column.resizable = columnElement.attributes['data-g-resizable'].nodeValue == 'false' ? false : true;
                     }
-                    if (columns[i].attributes['data-g-not-sized'] != undefined) {
-                        column.notSized = columns[i].attributes['data-g-not-sized'].nodeValue == 'true' ? true : false;
+                    if (columnElement.attributes['data-g-not-sized'] != undefined) {
+                        column.notSized = columnElement.attributes['data-g-not-sized'].nodeValue == 'true' ? true : false;
                         this.hasAnyNotSizedColumn = true;
                     }
-                    if (columns[i].attributes['data-g-enable-filtering'] != undefined) {
-                        column.enableFiltering = columns[i].attributes['data-g-enable-filtering'].nodeValue == 'false' ? false : true;
+                    if (columnElement.attributes['data-g-enable-filtering'] != undefined) {
+                        column.enableFiltering = columnElement.attributes['data-g-enable-filtering'].nodeValue == 'false' ? false : true;
                     }
-                    if (columns[i].attributes['data-g-enable-sorting'] != undefined) {
-                        column.enableSorting = columns[i].attributes['data-g-enable-sorting'].nodeValue == 'false' ? false : true;
+                    if (columnElement.attributes['data-g-enable-sorting'] != undefined) {
+                        column.enableSorting = columnElement.attributes['data-g-enable-sorting'].nodeValue == 'false' ? false : true;
                     }
-                    if (columns[i].attributes['data-g-enable-grouping'] != undefined) {
-                        column.enableGrouping = columns[i].attributes['data-g-enable-grouping'].nodeValue == 'false' ? false : true;
+                    if (columnElement.attributes['data-g-enable-grouping'] != undefined) {
+                        column.enableGrouping = columnElement.attributes['data-g-enable-grouping'].nodeValue == 'false' ? false : true;
                     }
 
-                    column.sortMemberPath = columns[i].attributes['data-g-sort-member'] != undefined ? columns[i].attributes['data-g-sort-member'].nodeValue : column.member;
-                    column.groupMemberPath = columns[i].attributes['data-g-group-member'] !== undefined ? columns[i].attributes['data-g-group-member'].nodeValue : column.member;
-                    column.filterMemberPath = columns[i].attributes['data-g-filter-member'] != undefined ? columns[i].attributes['data-g-filter-member'].nodeValue : column.member;
+                    column.sortMemberPath = columnElement.attributes['data-g-sort-member'] != undefined ? columnElement.attributes['data-g-sort-member'].nodeValue : column.member;
+                    column.groupMemberPath = columnElement.attributes['data-g-group-member'] !== undefined ? columnElement.attributes['data-g-group-member'].nodeValue : column.member;
+                    column.filterMemberPath = columnElement.attributes['data-g-filter-member'] != undefined ? columnElement.attributes['data-g-filter-member'].nodeValue : column.member;
 
                     this.columns.push(column);
                 }
@@ -232,19 +233,19 @@ module TesserisPro.TGrid {
         }
 
         public applyHandler() {
-            for (var i = 0; i < this.columns.length; i++) {
-                if (isNotNoU(this.columns[i].member)) {
-                    if (isNoU(this.columns[i].groupMemberPath)) {
-                        this.columns[i].groupMemberPath = this.columns[i].member;
+            this.columns.forEach((column) => {
+                if (isNotNoU(column.member)) {
+                    if (isNoU(column.groupMemberPath)) {
+                        column.groupMemberPath = column.member;
                     }
-                    if (isNoU(this.columns[i].sortMemberPath)) {
-                        this.columns[i].sortMemberPath = this.columns[i].member;
+                    if (isNoU(column.sortMemberPath)) {
+                        column.sortMemberPath = column.member;
                     }
-                    if (isNoU(this.columns[i].filterMemberPath)) {
-                        this.columns[i].sortMemberPath = this.columns[i].member;
+                    if (isNoU(column.filterMemberPath)) {
+                        column.sortMemberPath = column.member;   // TODO should be setting filterMemberPath, fix next commit.
                     }
                 }
-            }
+            });
             this.apply();
         }
       

@@ -35,15 +35,11 @@
 /// <reference path="IHtmlProvider.ts" />
 /// <reference path="IItemProvider.ts" />
 /// <reference path="knockout/KnockoutHtmlProvider.ts" />
-/// <reference path="knockout/KnockoutFilterPopupViewModel.ts"/>
-/// <reference path="angular/AngularFilterPopupViewModel.ts"/>
 /// <reference path="angular/AngularHtmlProvider.ts" />
-/// <reference path="angular/AngularItemViewModel.ts"/>
 /// <reference path="GroupHeaderDescriptor.ts" />
 /// <reference path="utils.ts" />
 /// <reference path="IFooterViewModel.ts"/>
-/// <reference path="scripts/typings/angularjs/angular.d.ts"/>
-/// <reference path="scripts/typings/knockout/knockout.d.ts"/>
+
 
 module TesserisPro.TGrid {
 
@@ -261,7 +257,9 @@ module TesserisPro.TGrid {
                 this.refreshHeader();
                 this.refreshBody(this.options.enableVirtualScroll);
             } else {
-                this.sortBy(this.options.sortDescriptor.path);
+                //this.sortBy(this.options.sortDescriptor.path)         this simulates click - inverting any existing sort
+                this.refreshHeader();
+                this.refreshBody();
             }
 
             this.buisyIndicator = document.createElement("div");
@@ -282,9 +280,9 @@ module TesserisPro.TGrid {
             }
 
             this.hideBuisyIndicator();
-            var self = this;
+            var that = this;
             this.hidePopUpOnResize= function(event: UIEvent) {
-                self.hideFilterPopupOnResize(event);
+                that.hideFilterPopupOnResize(event);
             };
 
             this.currentModeDesktop = this.isDesktopMode();
@@ -293,8 +291,8 @@ module TesserisPro.TGrid {
             }
             this.options.tableWidth = this.rootElement.clientWidth;
             this.updateWidthOnResize = function () {
-                if (self.options.tableWidth != self.rootElement.clientWidth) {
-                    self.htmlProvider.updateColumnWidth(self.options, self.tableHeader, self.tableBody, self.tableFooter);
+                if (that.options.tableWidth != that.rootElement.clientWidth) {
+                    that.htmlProvider.updateColumnWidth(that.options, that.tableHeader, that.tableBody, that.tableFooter);
                 }
             };
             addEventListener("resize", this.updateWidthOnResize);
@@ -1353,9 +1351,9 @@ module TesserisPro.TGrid {
                 document.body.appendChild(this.filterPopUp);
                 this.filterPopupViewModel = this.htmlProvider.getFilterPopupViewModel(this.filterPopUp);
                 this.htmlProvider.updateFilteringPopUp(this.options, this.filterPopUp, this.filterPopupViewModel);
-                var self = this;
+                //var that = this;
                 //window.onresize = function (event: UIEvent) {
-                //    self.hideFilterPopupOnResize(event);
+                //    that.hideFilterPopupOnResize(event);
                 //};
                 addEventListener("resize", this.hidePopUpOnResize);
             }
@@ -1464,17 +1462,17 @@ module TesserisPro.TGrid {
         }
 
         private hideFilterPopupOnResize(e: UIEvent) {
-            var self = this;
+            var that = this;
             setTimeout(function () {
-                if (self.options.enableFiltering) {
-                    if (!self.isDesktopMode() && self.currentModeDesktop) {
-                        self.currentModeDesktop = false;
-                        self.hideFilterPopup();
+                if (that.options.enableFiltering) {
+                    if (!that.isDesktopMode() && that.currentModeDesktop) {
+                        that.currentModeDesktop = false;
+                        that.hideFilterPopup();
                         return;
                     }
-                    if (self.isDesktopMode() && !self.currentModeDesktop) {
-                        self.currentModeDesktop = true;
-                        self.hideFilterPopup();
+                    if (that.isDesktopMode() && !that.currentModeDesktop) {
+                        that.currentModeDesktop = true;
+                        that.hideFilterPopup();
                     }
                 }
             }, 100);

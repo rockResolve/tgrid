@@ -68,7 +68,6 @@ module TesserisPro.TGrid {
             this.totalCount = Math.floor(totalCount);
             if (this.$scope != null) {
                 this.$scope.totalCount = Math.floor(totalCount);
-                var self = this;
                 setTimeout(() => this.$scope.$apply(), 1);
             }
         }
@@ -85,7 +84,6 @@ module TesserisPro.TGrid {
             this.currentPage = Math.floor(currentPage);
             if (this.$scope != null) {
                 this.$scope.currentPage = Math.floor(currentPage);
-                var self = this;
                 setTimeout(() => this.$scope.$apply(), 1);
             }
         }
@@ -94,7 +92,6 @@ module TesserisPro.TGrid {
             this.totalPages = Math.floor(totalPages);
             if (this.$scope != null) {
                 this.$scope.totalPages = Math.floor(totalPages);
-                var self = this;
                 setTimeout(() => this.$scope.$apply(), 1);
             }
         }
