@@ -178,6 +178,9 @@ module TesserisPro.TGrid {
                         column.cellDetail = new Template(cellDetail[0]);
                     } 
 
+                    if (columnElement.attributes['data-g-width'] != null) {
+                        column.width = columnElement.attributes['data-g-width'].nodeValue;
+                    }
                     if (columnElement.attributes['data-g-views'] != null) {
                         column.device = columnElement.attributes['data-g-views'].nodeValue;
                     }
@@ -242,7 +245,7 @@ module TesserisPro.TGrid {
                         column.sortMemberPath = column.member;
                     }
                     if (isNoU(column.filterMemberPath)) {
-                        column.sortMemberPath = column.member;   // TODO should be setting filterMemberPath, fix next commit.
+                        column.filterMemberPath = column.member;
                     }
                 }
             });

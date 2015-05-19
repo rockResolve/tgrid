@@ -312,6 +312,9 @@ module TesserisPro.TGrid {
                         (function (item) {
                             row.onclick = function (e) {
                                 if (option.selectionMode != SelectionMode.None) {
+                                    //NOTE: Beware delete button on row, click event may propogate to here.
+                                    //      IE will throw an uncaught exception because angular.element.scope() returns undefined.
+                                    // Also angular.element.scope() requires debug info to be on.
                                     var itemViewModel = angular.element(e.target).scope()["viewModel"];
                                     selected(itemViewModel, e.ctrlKey);
                                 }

@@ -41,11 +41,11 @@ module TesserisPro.TGrid {
         public onReset: () => void;
 
 
-        constructor(items: Array<any>) {
-            if (isObservable(items)) {
-                this.sourceItems = ko.unwrap(items);
-            } else {
+        constructor(items: any[]| (() => any[])) {
+            if (items instanceof Array) {
                 this.sourceItems = items;
+            } else { 
+                this.sourceItems = (<any>items)();        
             }
         }
 
