@@ -154,85 +154,82 @@ module TesserisPro.TGrid {
                 var optionsElement = document.createElement("div");
                 optionsElement.innerHTML = text;
 
-                var headers = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("header");
-                var cells = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("cell");
-                var cellDetails = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("celldetail");
+                //var headers = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("header");
+                //var cells = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("cell");
+                //var cellDetails = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("celldetail");
 
                 var columnElements = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("column");
                 for (var idx = 0; idx < columnElements.length; idx++) {
                     var columnElement = columnElements[idx];
                     var column = new ColumnInfo();
-                    if (columnElement.attributes['data-g-member'] != undefined){
-                        column.member = columnElement.attributes['data-g-member'].nodeValue;
-                    }
-                    var header = <NodeListOf<HTMLElement>>columnElement.getElementsByTagName("header");
-                    if (header.length > 0) {
-                        column.header = new Template(header[0]);
-                    }
-                    var cell = <NodeListOf<HTMLElement>>columnElement.getElementsByTagName("cell");
-                    if (cell.length > 0) {
-                        column.cell = new Template(cell[0]);
-                    }
-                    var cellDetail = <NodeListOf<HTMLElement>>columnElement.getElementsByTagName("celldetail");
-                    if (cellDetail.length == 1){
-                        column.cellDetail = new Template(cellDetail[0]);
-                    } 
 
-                    if (columnElement.attributes['data-g-width'] != null) {
-                        column.width = columnElement.attributes['data-g-width'].nodeValue;
-                    }
-                    if (columnElement.attributes['data-g-views'] != null) {
-                        column.device = columnElement.attributes['data-g-views'].nodeValue;
-                    }
-                    if (columnElement.attributes['data-g-resizable'] != undefined) {
-                        column.resizable = columnElement.attributes['data-g-resizable'].nodeValue == 'false' ? false : true;
-                    }
-                    if (columnElement.attributes['data-g-not-sized'] != undefined) {
-                        column.notSized = columnElement.attributes['data-g-not-sized'].nodeValue == 'true' ? true : false;
+                    column.member = columnElement.getAttribute('data-g-member');
+
+                    column.header = this.getTemplateElementIfDefined(columnElement, "header", column.header);
+                    column.cell = this.getTemplateElementIfDefined(columnElement, "cell", column.cell);
+                    column.cellDetail = this.getTemplateElementIfDefined(columnElement, "celldetail", column.cellDetail);
+
+                    column.width = this.getAttrIfDefined(columnElement, 'data-g-width', column.width);
+                    column.device = this.getAttrIfDefined(columnElement, 'data-g-views', column.device);
+
+                    column.resizable = this.getBoolAttrIfDefined(columnElement, 'data-g-resizable', column.resizable);
+                    column.notSized = this.getBoolAttrIfDefined(columnElement, 'data-g-not-sized', column.notSized);
+                    if (column.notSized) {
                         this.hasAnyNotSizedColumn = true;
                     }
-                    if (columnElement.attributes['data-g-enable-filtering'] != undefined) {
-                        column.enableFiltering = columnElement.attributes['data-g-enable-filtering'].nodeValue == 'false' ? false : true;
-                    }
-                    if (columnElement.attributes['data-g-enable-sorting'] != undefined) {
-                        column.enableSorting = columnElement.attributes['data-g-enable-sorting'].nodeValue == 'false' ? false : true;
-                    }
-                    if (columnElement.attributes['data-g-enable-grouping'] != undefined) {
-                        column.enableGrouping = columnElement.attributes['data-g-enable-grouping'].nodeValue == 'false' ? false : true;
-                    }
+                    column.enableFiltering = this.getBoolAttrIfDefined(columnElement, 'data-g-enable-filtering', column.enableFiltering);
+                    column.enableSorting = this.getBoolAttrIfDefined(columnElement, 'data-g-enable-sorting', column.enableSorting);
+                    column.enableGrouping = this.getBoolAttrIfDefined(columnElement, 'data-g-enable-grouping', column.enableGrouping);
 
-                    column.sortMemberPath = columnElement.attributes['data-g-sort-member'] != undefined ? columnElement.attributes['data-g-sort-member'].nodeValue : column.member;
-                    column.groupMemberPath = columnElement.attributes['data-g-group-member'] !== undefined ? columnElement.attributes['data-g-group-member'].nodeValue : column.member;
-                    column.filterMemberPath = columnElement.attributes['data-g-filter-member'] != undefined ? columnElement.attributes['data-g-filter-member'].nodeValue : column.member;
+                    column.sortMemberPath = this.getAttrIfDefined(columnElement, 'data-g-sort-member', column.member);
+                    column.groupMemberPath = this.getAttrIfDefined(columnElement, 'data-g-group-member', column.member);
+                    column.filterMemberPath = this.getAttrIfDefined(columnElement, 'data-g-filter-member', column.member);
 
                     this.columns.push(column);
                 }
 
-                var filterPopup = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("filterpopup");
-                if (filterPopup.length == 1) {
-                    this.filterPopup = new Template(filterPopup[0]);
-                }
-                var mobileTemplate = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("mobile");
-                if (mobileTemplate.length == 1) {
-                    this.mobileTemplateHtml = new Template(mobileTemplate[0]);
-                }
-                var groupHeaderTemplate = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("groupheader");
-                if (groupHeaderTemplate.length == 1) {
-                    this.groupHeaderTemplate = new Template(groupHeaderTemplate[0]);
-                }
-                var detailsTemplate = <NodeListOf<HTMLElement>>optionsElement.getElementsByTagName("details");
-                if (detailsTemplate.length == 1){
-                    this.detailsTemplateHtml = new Template(detailsTemplate[0]);
-                }
-                var footer = optionsElement.getElementsByTagName("footer");
-                if (footer.length != 0) {
-                    this.tableFooterTemplate = new Template(footer[0]);
-                }
-            } 
+                this.filterPopup = this.getTemplateElementIfDefined(optionsElement, "filterpopup", this.filterPopup);
+                this.mobileTemplateHtml = this.getTemplateElementIfDefined(optionsElement, "mobile", this.mobileTemplateHtml);
+                this.groupHeaderTemplate = this.getTemplateElementIfDefined(optionsElement, "groupheader", this.groupHeaderTemplate);
+                this.detailsTemplateHtml = this.getTemplateElementIfDefined(optionsElement, "details", this.detailsTemplateHtml);
+                this.tableFooterTemplate = this.getTemplateElementIfDefined(optionsElement, "footer", this.tableFooterTemplate);
+            }
             this.sortDescriptor = new TesserisPro.TGrid.SortDescriptor(null, null);
             this.showDetailFor = new ShowDetail();
-           // this.showCustomDetailFor = new ShowDetail();
             this.filterPopupForColumn = new ColumnInfo();
+        }
+
+        private getAttrIfDefined(columnElement: HTMLElement, attributeName: string, defaultValue: any) {
+            //if (columnElement.attributes['data-g-member'] != undefined){
+            //    column.member = columnElement.attributes['data-g-member'].nodeValue;     raises deprecation warning in chrome
+            //}
+            if (columnElement.attributes[attributeName] !== undefined) {
+                return columnElement.getAttribute(attributeName);
+            } else {
+                return defaultValue;
+            }
+        }
+        private getBoolAttrIfDefined(columnElement: HTMLElement, attributeName: string, defaultValue: any) {
+            if (columnElement.attributes[attributeName] !== undefined) {
+                var attrValue = columnElement.getAttribute(attributeName);// === 'false' ? false : true;
+                if (attrValue.toLowerCase() === "false") {
+                    return false;
+                } else if (attrValue.toLowerCase() === "true") {
+                    return true;
+                } else {
+                    throw new Error("html bound '" + attributeName + "' parameter must be 'true' or 'false'");
+                }
+            } else {
+                return defaultValue;
+            }
+        }
+        private getTemplateElementIfDefined(containingElement: HTMLElement, tagName: string, defaultValue: Template) {
+            var element = <HTMLElement>containingElement.getElementsByTagName(tagName)[0];
+            if (element) {
+                return new Template(element);
+            } else {
+                return defaultValue;
+            }
         }
 
         public applyHandler() {
@@ -251,6 +248,6 @@ module TesserisPro.TGrid {
             });
             this.apply();
         }
-      
+
     }
 }

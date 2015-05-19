@@ -185,6 +185,8 @@ module TGrid.Angular {
                     parmValue = false;
                 } else if (parmValue.toLowerCase() === "true") {
                     parmValue = true;
+                } else {
+                    throw new Error("html directive '" + parmName + "' parameter must be 'true' or 'false'");
                 }
             } else if (typeof parmValue !== "boolean") {
                 throw new Error("html directive '" + parmName + "' parameter could not be converted to a boolean");

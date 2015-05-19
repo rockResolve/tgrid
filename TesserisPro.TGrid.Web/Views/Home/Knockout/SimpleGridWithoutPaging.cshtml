@@ -67,9 +67,6 @@
                 function vm() {
                     var self = this;
                     self.itemsProvider = new TesserisPro.TGrid.ArrayItemsProvider(items);
-                    self.addItems = function (options) {
-                    	self.itemsProvider.addArray(items);
-                    };
                 };
 
                 $(function () {

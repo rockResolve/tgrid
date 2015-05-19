@@ -427,32 +427,6 @@ module TesserisPro.TGrid {
             }
             return sortArrowContainer;
         }
-
-        private removeArrows(htmlNode: HTMLElement): void {
-            var element = htmlNode.getElementsByClassName("tgrid-arrow-up");
-            for (var i = 0; i < element.length; i++) {
-                element[i].parentNode.removeChild(element[i]);
-                i--;
-            }
-            var element = htmlNode.getElementsByClassName("tgrid-arrow-down");
-            for (var i = 0; i < element.length; i++){
-                element[i].parentNode.removeChild(element[i]);
-                i--;
-            }
-        }
-
-        private removeFilterButtons(container: HTMLElement): void {
-            var elements = container.getElementsByClassName("tgrid-filter-button");
-            for (var i = 0; i < elements.length; i++) {
-                elements[i].parentNode.removeChild(elements[i]);
-                i--;
-            }
-            var elements = container.getElementsByClassName("tgrid-filter-button-active");
-            for (var i = 0; i < elements.length; i++) {
-                elements[i].parentNode.removeChild(elements[i]);
-                i--;
-            }
-        }
                
         // Mobile Methods
 

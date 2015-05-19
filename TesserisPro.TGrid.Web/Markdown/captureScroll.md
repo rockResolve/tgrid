@@ -1,6 +1,6 @@
 ﻿####captureScroll
     
-Enables or disables the scroll capturing.
+Enables or disables the scroll capturing i.e. Should scrolling within the grid prevent scrolling the containing window.
 
 **Value:** *true* or *false*
 

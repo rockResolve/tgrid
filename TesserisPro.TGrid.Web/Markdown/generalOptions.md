@@ -37,7 +37,6 @@ class Options {
     public showDetailFor: ShowDetail;
     public selection: any[];
     public shouldAddDetailsOnSelection: boolean;
-    public showCustomDetailFor: ShowDetail;
     public parentViewModel: any;
     public filterPopupForColumn: ColumnInfo;
     public columnMinWidth: number;

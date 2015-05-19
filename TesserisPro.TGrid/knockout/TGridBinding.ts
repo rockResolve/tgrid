@@ -191,6 +191,8 @@ class TGridBindingHandler implements KnockoutBindingHandler  {
                 parmValue = false;
             } else if (parmValue.toLowerCase() === "true") {
                 parmValue = true;
+            } else {
+                throw new Error("html bound '" + parmName + "' parameter must be 'true' or 'false'");
             }
         } else if (typeof parmValue !== "boolean") {
             throw new Error("html bound '" + parmName + "' parameter could not be converted to a boolean");
