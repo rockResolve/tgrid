@@ -165,7 +165,7 @@ module TesserisPro.TGrid {
                                 document.onmousemove = m => {
                                     if (position != 0) {
                                         if (columnCopy.width.indexOf("%") == -1) {
-                                            var width = parseInt(option.columns[idx].width);
+                                            var width = parseInt(columnCopy.width);
                                         } else {
                                             var gridWidth = that.getGridWidth(header);
                                             var percentInt = parseInt(columnCopy.width.substring(0, columnCopy.width.indexOf("%")));
